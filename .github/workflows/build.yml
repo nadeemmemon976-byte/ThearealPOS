@@ -1,0 +1,44 @@
+name: Build The Real POS APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Android project
+        run: |
+          unzip -q TheRealPOS_GitHub_Build_Ready.zip -d extracted
+          PROJECT_DIR="extracted/TheRealPOS_GitHub_Build_Ready"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          ls -la "$PROJECT_DIR"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build Debug APK
+        run: |
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TheRealPOS-debug-APK
+          path: "**/build/outputs/apk/debug/*.apk"
