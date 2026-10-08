@@ -11,15 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract Android project
+      - name: Extract project
         run: |
           unzip -q TheRealPOS_GitHub_Build_Ready.zip -d extracted
-          PROJECT_DIR="extracted/TheRealPOS_GitHub_Build_Ready"
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-          ls -la "$PROJECT_DIR"
+          echo "Extracted files:"
+          find extracted -maxdepth 3 -type f | head -100
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -32,7 +31,13 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build Debug APK
+      - name: Find Android project
+        run: |
+          PROJECT_DIR=$(find extracted -name settings.gradle -o -name settings.gradle.kts | head -1 | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Project found at: $PROJECT_DIR"
+
+      - name: Build APK
         run: |
           cd "$PROJECT_DIR"
           gradle assembleDebug --stacktrace
